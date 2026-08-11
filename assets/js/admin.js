@@ -55,6 +55,9 @@ const saveBtn =
 const resetBtn =
   document.getElementById('resetBtn');
 
+const saveStatus =
+  document.getElementById('saveStatus');
+
 const toast =
   document.getElementById('toast');
 
@@ -230,6 +233,130 @@ function limpiarCiudad() {
 
   ciudadSelect.disabled =
     true;
+
+}
+
+
+/**
+ * Convierte una marca de tiempo de la Data Table en algo legible.
+ * Acepta ISO completo ("2026-08-11T00:50:56.495Z") o fecha simple.
+ */
+function formatearMomento(valor) {
+
+  if (!valor) {
+    return '';
+  }
+
+  const texto =
+    String(valor).trim();
+
+
+  if (texto.includes('T')) {
+
+    const fecha =
+      new Date(texto);
+
+    return isNaN(fecha)
+      ? ''
+      : fecha.toLocaleString(
+          'es-ES',
+          {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }
+        );
+
+  }
+
+
+  const simple =
+    texto.match(
+      /^(\d{4})-(\d{2})-(\d{2})$/
+    );
+
+  return simple
+    ? `${simple[3]}/${simple[2]}/${simple[1]}`
+    : texto;
+
+}
+
+
+function textoMeta(registro) {
+
+  const partes = [
+    registro.ciudad || 'General',
+    `ID ${registro.id}`
+  ];
+
+  const momento =
+    formatearMomento(
+      registro.updatedAt ||
+      registro.ultima_actualizacion
+    );
+
+  if (momento) {
+
+    partes.push(
+      `Actualizado ${momento}`
+    );
+
+  }
+
+  return partes.join(' · ');
+
+}
+
+
+/**
+ * Mensaje fijo junto a los botones. A diferencia del toast, no
+ * desaparece: deja constancia de la última escritura confirmada.
+ */
+function marcarEstadoGuardado(
+  texto,
+  tipo = ''
+) {
+
+  saveStatus.textContent =
+    texto;
+
+  saveStatus.className =
+    `save-status ${tipo}`.trim();
+
+}
+
+
+/**
+ * Compara lo enviado con lo que ha devuelto el servidor, para
+ * detectar campos que la Data Table haya guardado de otra forma.
+ */
+function diferenciasConGuardado(
+  enviado,
+  guardado
+) {
+
+  return Object.keys(campos).filter(
+    key => {
+
+      const a =
+        key.startsWith('fecha')
+          ? normalizarFecha(enviado[key])
+          : enviado[key];
+
+      const b =
+        key.startsWith('fecha')
+          ? normalizarFecha(guardado[key])
+          : guardado[key];
+
+      return (
+        String(a ?? '').trim() !==
+        String(b ?? '').trim()
+      );
+
+    }
+  );
 
 }
 
@@ -460,6 +587,8 @@ function seleccionarRegistro(
   id
 ) {
 
+  marcarEstadoGuardado('');
+
   const registro =
     registrosCurso.find(
       item =>
@@ -514,7 +643,7 @@ function cargarFormulario(
 
 
   editorMeta.textContent =
-    `${registro.ciudad || 'General'} · ID ${registro.id}`;
+    textoMeta(registro);
 
 
   Object.keys(
@@ -698,24 +827,43 @@ async function guardarCambios(
     }
 
 
-    let result = {};
+    let respuesta = null;
 
     try {
 
-      result =
+      respuesta =
         await response.json();
 
     } catch {}
 
 
     /**
-     * Actualizamos memoria local
-     * para no necesitar recargar.
+     * La confirmación se construye con la fila que devuelve n8n,
+     * no con lo que acabamos de enviar: así lo que se ve en
+     * pantalla es lo que ha quedado realmente en la Data Table.
      */
+
+    const filas =
+      respuesta
+        ? normalizarRespuesta(respuesta)
+        : [];
+
+    const guardado =
+      filas.find(
+        fila =>
+          fila &&
+          String(fila.id) ===
+          String(payload.id)
+      ) || null;
+
+
+    const confirmado =
+      guardado || payload;
+
 
     Object.assign(
       registroActual,
-      payload
+      confirmado
     );
 
 
@@ -732,20 +880,84 @@ async function guardarCambios(
       registrosCurso[index] =
         {
           ...registrosCurso[index],
-          ...payload
+          ...confirmado
         };
 
     }
 
 
-    actualizarBadge(
-      payload.estado
+    // Repinta el formulario con los valores confirmados.
+    cargarFormulario(
+      registroActual
     );
 
 
+    const ciudad =
+      registroActual.ciudad || 'General';
+
+    const hora =
+      new Date().toLocaleTimeString(
+        'es-ES',
+        {
+          hour: '2-digit',
+          minute: '2-digit'
+        }
+      );
+
+
+    if (!guardado) {
+
+      /**
+       * n8n respondió, pero sin devolver la fila (por ejemplo con
+       * "Respond immediately"). No podemos confirmar el contenido.
+       */
+
+      marcarEstadoGuardado(
+        `Enviado a las ${hora} · sin confirmación del servidor`,
+        'warn'
+      );
+
+      showToast(
+        (respuesta && respuesta.message) ||
+        'Cambios enviados correctamente.'
+      );
+
+      return;
+
+    }
+
+
+    const diferencias =
+      diferenciasConGuardado(
+        payload,
+        guardado
+      );
+
+
+    if (diferencias.length) {
+
+      marcarEstadoGuardado(
+        `Guardado a las ${hora} con diferencias: ${diferencias.join(', ')}`,
+        'warn'
+      );
+
+      showToast(
+        `Guardado, pero la Data Table devolvió otros valores en: ${diferencias.join(', ')}`,
+        'warning'
+      );
+
+      return;
+
+    }
+
+
+    marcarEstadoGuardado(
+      `Guardado a las ${hora} · ${ciudad}`,
+      'ok'
+    );
+
     showToast(
-      result.message ||
-      'Cambios guardados correctamente.'
+      `Cambios guardados en la Data Table · ${ciudad}`
     );
 
 
@@ -879,6 +1091,8 @@ resetBtn.addEventListener(
     cargarFormulario(
       registroActual
     );
+
+    marcarEstadoGuardado('');
 
     showToast(
       'Cambios descartados.'

@@ -4,7 +4,7 @@
 
 
 
-body {
+body  {
   display: grid;
   place-items: center;
   padding: 24px;
@@ -13,12 +13,12 @@ body {
     var(--bg);
 }
 
-.btn {
+.btn  {
   width: 100%;
   min-height: 46px;
 }
 
-.login{
+.login {
   width: min(420px, 100%);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -27,7 +27,7 @@ body {
   padding: 34px 30px 30px;
 }
 
-.eyebrow{
+.eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -39,25 +39,25 @@ body {
   text-transform: uppercase;
 }
 
-h1{
+h1 {
   margin: 0 0 8px;
   font-size: 30px;
   line-height: 1.1;
   letter-spacing: -.03em;
 }
 
-.subtitle{
+.subtitle {
   margin: 0 0 24px;
   color: var(--muted);
   font-size: 14px;
   line-height: 1.5;
 }
 
-.field{
+.field {
   margin-bottom: 16px;
 }
 
-label{
+label {
   display: block;
   margin-bottom: 6px;
   font-size: 13px;
@@ -66,7 +66,7 @@ label{
 }
 
 input[type="text"],
-input[type="password"]{
+input[type="password"] {
   width: 100%;
   min-height: 46px;
   padding: 0 14px;
@@ -78,14 +78,14 @@ input[type="password"]{
 }
 
 input[type="text"]:focus,
-input[type="password"]:focus{
+input[type="password"]:focus {
   outline: none;
   border-color: var(--accent);
   background: #fff;
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-.remember{
+.remember {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -95,19 +95,19 @@ input[type="password"]:focus{
   cursor: pointer;
 }
 
-.remember input{
+.remember input {
   width: 17px;
   height: 17px;
   accent-color: var(--accent);
   cursor: pointer;
 }
 
-.btn:hover:not(:disabled){
+.btn:hover:not(:disabled) {
   background: var(--accent-dark);
   transform: translateY(-1px);
 }
 
-.alert{
+.alert {
   display: none;
   margin-bottom: 18px;
   padding: 12px 14px;
@@ -119,11 +119,11 @@ input[type="password"]:focus{
   line-height: 1.45;
 }
 
-.alert.visible{
+.alert.visible {
   display: block;
 }
 
-.foot{
+.foot {
   margin: 22px 0 0;
   color: var(--muted);
   font-size: 12px;
