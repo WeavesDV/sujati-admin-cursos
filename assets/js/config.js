@@ -23,7 +23,7 @@ const CONFIG = {
       'https://n8n.weavewp.com/webhook/2d09dd67-8d21-4c18-bf5c-e958ed473210',
 
     save:
-      'https://n8n.weavewp.com/webhook/sujati-cursos-guardar'
+      'https://n8n.weavewp.com/webhook-test/fc12da9f-a6e0-4221-ada1-eced23e7e1c0'
 
   },
 
