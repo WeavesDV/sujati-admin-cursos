@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+  <meta name="googlebot" content="noindex, nofollow" />
+  <title>Acceso · Spazio Bodywork</title>
+
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/login.css" />
+</head>
+
+<body>
+<form class="login" id="loginForm" autocomplete="off">
+
+  <div class="eyebrow">Spazio Bodywork · Administración</div>
+
+  <h1>Acceso restringido</h1>
+
+  <p class="subtitle">
+    Introduce tus credenciales para entrar al panel de gestión de cursos.
+  </p>
+
+  <div class="alert" id="alert" role="alert"></div>
+
+  <div class="field">
+    <label for="usuario">Usuario</label>
+    <input type="text" id="usuario" name="usuario" autocomplete="username" required />
+  </div>
+
+  <div class="field">
+    <label for="clave">Contraseña</label>
+    <input type="password" id="clave" name="clave" autocomplete="current-password" required />
+  </div>
+
+  <label class="remember">
+    <input type="checkbox" id="recordar" />
+    Mantener la sesión iniciada en este equipo
+  </label>
+
+  <button type="submit" class="btn btn-primary" id="submitBtn">Entrar</button>
+
+  <p class="foot">
+    Acceso solo para personal autorizado.
+  </p>
+
+</form>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/login.js"></script>
+
+</body>
+</html>

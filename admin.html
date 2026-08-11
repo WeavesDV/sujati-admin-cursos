@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+  <meta name="googlebot" content="noindex, nofollow" />
+  <title>Gestión de cursos · Spazio Bodywork</title>
+
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+
+  <!-- data-guard redirige al login si no hay sesión válida. -->
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/auth.js" data-guard></script>
+</head>
+
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Spazio Bodywork · Administración</div>
+      <h1>Gestión de cursos</h1>
+      <p class="subtitle">
+        Selecciona una formación y una ciudad para actualizar fechas, precios,
+        docentes, enlaces y el contenido de los correos automáticos.
+      </p>
+    </div>
+
+    <div>
+      <div class="connection">
+        <span class="dot" id="connectionDot"></span>
+        <span id="connectionText">Sin consultar</span>
+      </div>
+
+      <div class="sesion">
+        <span>Sesión: <strong id="sesionUsuario">—</strong></span>
+        <button type="button" class="btn-logout" id="logoutBtn">Salir</button>
+      </div>
+    </div>
+  </header>
+
+
+  <div class="layout">
+
+    <!-- =======================================================
+         SIDEBAR
+         ======================================================= -->
+
+    <aside class="card sidebar">
+
+      <h2 class="section-title">Seleccionar formación</h2>
+
+      <p class="section-help">
+        Al elegir un curso se consultarán automáticamente las sedes disponibles.
+      </p>
+
+
+      <div class="field">
+
+        <label for="cursoSelect">
+          Curso
+        </label>
+
+        <select id="cursoSelect">
+
+          <option value="">
+            Selecciona un curso
+          </option>
+
+          <option value="anatomia-online">
+            Anatomía - Curso Online
+          </option>
+
+          <option value="neurofisiologia-online">
+            Neurofisiología Aplicada al Masaje
+          </option>
+
+          <option value="formacion-anual">
+            Formación Anual
+          </option>
+
+          <option value="fin-semana-introductorio">
+            Fin de Semana Introductorio
+          </option>
+
+          <option value="semi-intensivo-intensivo">
+            Semi-intensivo e Intensivo
+          </option>
+
+          <option value="formacion-basica-intensiva">
+            Formación Básica Intensiva
+          </option>
+
+          <option value="formacion-avanzada">
+            Formación Avanzada
+          </option>
+
+          <option value="salir-laberinto-dolor">
+            Salir del Laberinto del Dolor
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="field">
+
+        <label for="ciudadSelect">
+          Ciudad / modalidad
+        </label>
+
+        <select
+          id="ciudadSelect"
+          disabled
+        >
+
+          <option value="">
+            Primero selecciona un curso
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="loader" id="loader">
+
+        <span class="spinner"></span>
+
+        Consultando información...
+
+      </div>
+
+      <p class="small-note">
+        Los cambios se guardan directamente en la Data Table de n8n.
+      </p>
+
+    </aside>
+
+
+    <!-- =======================================================
+         MAIN
+         ======================================================= -->
+
+    <main class="card main-card">
+
+      <section class="empty" id="emptyState">
+
+        <div>
+
+          <div class="empty-icon">
+            ✦
+          </div>
+
+          <h2>
+            Selecciona un curso
+          </h2>
+
+          <p>
+            Elige una formación en el panel izquierdo. Después podrás seleccionar
+            la ciudad o modalidad y editar toda la información asociada.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <form
+        class="editor"
+        id="editor"
+        autocomplete="off"
+      >
+
+        <div class="editor-head">
+
+          <div>
+
+            <h2 id="editorTitle">
+              Curso
+            </h2>
+
+            <div
+              class="editor-meta"
+              id="editorMeta"
+            ></div>
+
+          </div>
+
+          <span
+            class="badge"
+            id="estadoBadge"
+          >
+            —
+          </span>
+
+        </div>
+
+
+        <div class="editor-body">
+
+
+          <!-- DATOS GENERALES -->
+
+          <h3 class="block-title">
+            Información general
+          </h3>
+
+          <p class="block-help">
+            Estos datos pueden utilizarse automáticamente dentro del copy mediante variables.
+          </p>
+
+
+          <div class="grid-2">
+
+            <div class="field">
+
+              <label for="activo">
+                Activo
+              </label>
+
+              <select id="activo">
+
+                <option value="SI">
+                  Sí
+                </option>
+
+                <option value="NO">
+                  No
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="estado">
+                Estado
+              </label>
+
+              <select id="estado">
+
+                <option value="listo">
+                  Listo
+                </option>
+
+                <option value="revision">
+                  En revisión
+                </option>
+
+                <option value="pendiente">
+                  Pendiente
+                </option>
+
+                <option value="inactivo">
+                  Inactivo
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="fecha_inicio">
+                Fecha de inicio
+              </label>
+
+              <input
+                type="date"
+                id="fecha_inicio"
+              />
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="fecha_fin">
+                Fecha final
+              </label>
+
+              <input
+                type="date"
+                id="fecha_fin"
+              />
+
+            </div>
+
+
+            <div class="field span-2">
+
+              <label for="calendario">
+                Calendario / fechas
+              </label>
+
+              <textarea
+                id="calendario"
+                placeholder="Ej.: Módulo I: 20 y 21 de febrero&#10;Módulo II: 20 y 21 de marzo"
+              ></textarea>
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="precio">
+                Precio (€)
+              </label>
+
+              <input
+                type="number"
+                id="precio"
+                min="0"
+                step="0.01"
+              />
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="reserva">
+                Reserva (€)
+              </label>
+
+              <input
+                type="number"
+                id="reserva"
+                min="0"
+                step="0.01"
+              />
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="docente">
+                Docente
+              </label>
+
+              <input
+                type="text"
+                id="docente"
+              />
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="horario">
+                Horario
+              </label>
+
+              <input
+                type="text"
+                id="horario"
+                placeholder="Ej.: 10:00 a 19:30"
+              />
+
+            </div>
+
+
+            <div class="field span-2">
+
+              <label for="link">
+                Enlace
+              </label>
+
+              <input
+                type="url"
+                id="link"
+                placeholder="https://..."
+              />
+
+            </div>
+
+
+            <div class="field span-2">
+
+              <label for="notas">
+                Notas internas
+              </label>
+
+              <textarea
+                id="notas"
+                placeholder="Notas que no se envían al cliente"
+              ></textarea>
+
+            </div>
+
+          </div>
+
+
+          <div class="divider"></div>
+
+
+          <!-- EMAIL -->
+
+          <h3 class="block-title">
+            Correo automático
+          </h3>
+
+          <p class="block-help">
+            Puedes usar las variables disponibles dentro del asunto o del copy.
+          </p>
+
+
+          <div class="variables" id="variables">
+
+            <button type="button" class="variable" data-variable="{{nombre}}">
+              {{nombre}}
+            </button>
+
+            <button type="button" class="variable" data-variable="{{ciudad}}">
+              {{ciudad}}
+            </button>
+
+            <button type="button" class="variable" data-variable="{{fecha_inicio}}">
+              {{fecha_inicio}}
+            </button>
+
+            <button type="button" class="variable" data-variable="{{fecha_fin}}">
+              {{fecha_fin}}
+            </button>
+
+            <button type="button" class="variable" data-variable="{{calendario}}">
+              {{calendario}}
+            </button>
+
+            <button type="button" class="variable" data-variable="{{precio}}">
+              {{precio}}
+            </button>
+
+            <button type="button" class="variable" data-variable="{{docente}}">
+              {{docente}}
+            </button>
+
+            <button type="button" class="variable" data-variable="{{horario}}">
+              {{horario}}
+            </button>
+
+            <button type="button" class="variable" data-variable="{{reserva}}">
+              {{reserva}}
+            </button>
+
+            <button type="button" class="variable" data-variable="{{link}}">
+              {{link}}
+            </button>
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="asunto_template">
+              Asunto
+            </label>
+
+            <input
+              type="text"
+              id="asunto_template"
+            />
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="copy_template">
+              Copy del correo
+            </label>
+
+            <textarea
+              class="copy"
+              id="copy_template"
+            ></textarea>
+
+          </div>
+
+        </div>
+
+
+        <div class="actions">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            id="resetBtn"
+          >
+            Descartar cambios
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            id="saveBtn"
+          >
+            Guardar cambios
+          </button>
+
+        </div>
+
+      </form>
+
+    </main>
+
+  </div>
+
+</div>
+
+
+<div
+  class="toast"
+  id="toast"
+></div>
+
+<script src="assets/js/admin.js"></script>
+
+</body>
+</html>
