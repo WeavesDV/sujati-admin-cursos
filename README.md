@@ -69,3 +69,20 @@ Las URLs `/webhook-test/` de n8n solo responden **una vez** tras pulsar
 Si el panel se abre desde `file://` o desde otro dominio, el nodo
 "Respond to Webhook" debe devolver la cabecera `Access-Control-Allow-Origin`
 o el navegador bloqueará la respuesta.
+
+## Publicación
+
+El proyecto está publicado con GitHub Pages:
+
+<https://weavesdv.github.io/sujati-admin-cursos/>
+
+Cada `git push` a `main` vuelve a desplegar el sitio en un par de minutos.
+
+Un matiz sobre `robots.txt`: los buscadores solo leen el que está en la raíz
+del dominio (`weavesdv.github.io/robots.txt`), que no controlamos. Lo que de
+verdad mantiene el panel fuera de los buscadores es la etiqueta
+`<meta name="robots" content="noindex">` que llevan las tres páginas.
+
+Al ser un repositorio público, el código es visible para cualquiera: eso
+incluye los usuarios con sus hashes y las URLs de los webhooks de n8n. Ver
+"Alcance de la protección" más arriba.
