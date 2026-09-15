@@ -5,7 +5,7 @@
 
 
 .app {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1320px, calc(100% - 32px));
   margin: 0 auto;
   padding: 34px 0 56px;
 }
@@ -464,5 +464,279 @@ textarea:disabled {
 
   .span-2 {
     grid-column: auto;
+  }
+}
+
+
+/* ============================================================
+   VISTA PREVIA DEL CORREO
+   ============================================================ */
+
+/* Editor y vista previa, en paralelo. */
+.email-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.email-edit {
+  min-width: 0;
+}
+
+.field-help {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.formato-ayuda {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  padding: 12px 14px;
+}
+
+.formato-ayuda summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.formato-ayuda dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 14px;
+  margin: 14px 0 0;
+}
+
+.formato-ayuda dt {
+  color: var(--accent-dark);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.formato-ayuda dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.formato-ayuda p {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* La vista previa acompaña al scroll del editor. */
+.preview {
+  position: sticky;
+  top: 22px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  overflow: hidden;
+}
+
+.preview-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.preview-head h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.preview-sub {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.preview-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.device {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-soft);
+}
+
+.device-btn {
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  padding: 5px 11px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.device-btn.is-active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-ghost {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  padding: 6px 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.btn-ghost:hover {
+  border-color: rgba(47,95,83,.4);
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+/* Remedo de la cabecera del cliente de correo. */
+.preview-mail {
+  display: grid;
+  gap: 2px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.preview-de {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.preview-asunto {
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.preview-aviso {
+  display: none;
+  margin: 0;
+  padding: 9px 16px;
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.preview-aviso.show {
+  display: block;
+}
+
+/**
+ * El correo se renderiza a su ancho real (600 px o 380 px) y
+ * se reduce con transform para que quepa en la columna: así
+ * se ve la maqueta tal cual, no una versión reflowed.
+ */
+.preview-stage {
+  position: relative;
+  max-height: min(68vh, 720px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #f3e8eb;
+}
+
+.preview-stage iframe {
+  display: block;
+  width: 600px;
+  height: 900px;
+  border: 0;
+  transform-origin: top left;
+}
+
+/* ============================================================
+   VISTA PREVIA AMPLIADA
+   ============================================================ */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: none;
+  place-items: center;
+  padding: 28px 16px;
+  background: rgba(30, 26, 24, .55);
+  backdrop-filter: blur(3px);
+}
+
+.modal.show {
+  display: grid;
+}
+
+.modal-box {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(720px, 100%);
+  height: min(860px, 100%);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 30px 80px rgba(0,0,0,.3);
+  overflow: hidden;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-head strong {
+  display: block;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.modal-de {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.modal-box iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #f3e8eb;
+}
+
+@media (max-width: 1180px) {
+  .email-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .preview {
+    position: static;
   }
 }

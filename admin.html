@@ -13,6 +13,7 @@
   <!-- data-guard redirige al login si no hay sesión válida. -->
   <script src="assets/js/config.js"></script>
   <script src="assets/js/auth.js" data-guard></script>
+  <script src="assets/js/email-template.js"></script>
 </head>
 
 <body>
@@ -459,30 +460,224 @@
           </div>
 
 
-          <div class="field">
+          <p class="block-help">
+            Y estos bloques dan formato al copy. Se insertan donde tengas el cursor.
+          </p>
 
-            <label for="asunto_template">
-              Asunto
-            </label>
 
-            <input
-              type="text"
-              id="asunto_template"
-            />
+          <div class="variables" id="bloques">
+
+            <button type="button" class="variable" data-bloque="## Título de sección">
+              ## Subtítulo
+            </button>
+
+            <button type="button" class="variable" data-bloque="**texto en negrita**">
+              **negrita**
+            </button>
+
+            <button
+              type="button"
+              class="variable"
+              data-bloque="> **Fecha:** {{fecha_inicio}}&#10;> **Horario:** {{horario}}&#10;> **Ciudad:** {{ciudad}}"
+            >
+              Caja destacada
+            </button>
+
+            <button
+              type="button"
+              class="variable"
+              data-bloque="| **Material necesario:**&#10;| • Ropa cómoda&#10;| • 2 toallas medianas"
+            >
+              Caja clara
+            </button>
+
+            <button
+              type="button"
+              class="variable"
+              data-bloque="[boton:https://wa.me/34693059088]Confirmar por WhatsApp[/boton]"
+            >
+              Botón
+            </button>
+
+            <button type="button" class="variable" data-bloque="---">
+              Separador
+            </button>
 
           </div>
 
 
-          <div class="field">
+          <div class="email-workspace">
 
-            <label for="copy_template">
-              Copy del correo
-            </label>
 
-            <textarea
-              class="copy"
-              id="copy_template"
-            ></textarea>
+            <!-- COLUMNA DE EDICIÓN -->
+
+            <div class="email-edit">
+
+              <div class="field">
+
+                <label for="asunto_template">
+                  Asunto
+                </label>
+
+                <input
+                  type="text"
+                  id="asunto_template"
+                />
+
+                <span class="field-help">
+                  El asunto se usa también como titular de la banda del correo.
+                </span>
+
+              </div>
+
+
+              <div class="field">
+
+                <label for="copy_template">
+                  Copy del correo
+                </label>
+
+                <textarea
+                  class="copy"
+                  id="copy_template"
+                ></textarea>
+
+              </div>
+
+
+              <details class="formato-ayuda">
+
+                <summary>
+                  Cómo dar formato al copy
+                </summary>
+
+                <dl>
+
+                  <dt>Línea en blanco</dt>
+                  <dd>Separa párrafos.</dd>
+
+                  <dt>**texto**</dt>
+                  <dd>Pone el texto en negrita.</dd>
+
+                  <dt>## Título</dt>
+                  <dd>Subtítulo dentro del correo.</dd>
+
+                  <dt>&gt; línea</dt>
+                  <dd>Caja rosa destacada (datos del curso, avisos).</dd>
+
+                  <dt>| línea</dt>
+                  <dd>Caja blanca con borde (material, listas).</dd>
+
+                  <dt>[boton:URL]Texto[/boton]</dt>
+                  <dd>Botón centrado.</dd>
+
+                  <dt>---</dt>
+                  <dd>Línea separadora.</dd>
+
+                </dl>
+
+                <p>
+                  Si pegas el HTML completo de un correo, se respeta tal cual y
+                  no se aplica la plantilla.
+                </p>
+
+              </details>
+
+            </div>
+
+
+            <!-- COLUMNA DE VISTA PREVIA -->
+
+            <aside class="preview" id="preview">
+
+              <div class="preview-head">
+
+                <div>
+
+                  <h4>Vista previa</h4>
+
+                  <p class="preview-sub">
+                    Se actualiza mientras escribes.
+                  </p>
+
+                </div>
+
+                <div class="preview-tools">
+
+                  <div
+                    class="device"
+                    role="group"
+                    aria-label="Ancho de la vista previa"
+                  >
+
+                    <button
+                      type="button"
+                      class="device-btn is-active"
+                      data-ancho="600"
+                    >
+                      Escritorio
+                    </button>
+
+                    <button
+                      type="button"
+                      class="device-btn"
+                      data-ancho="380"
+                    >
+                      Móvil
+                    </button>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    class="btn-ghost"
+                    id="previewExpandBtn"
+                  >
+                    Ampliar
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <div class="preview-mail">
+
+                <span class="preview-de">
+                  Spazio Bodywork
+                </span>
+
+                <strong
+                  class="preview-asunto"
+                  id="previewAsunto"
+                >
+                  —
+                </strong>
+
+              </div>
+
+
+              <p
+                class="preview-aviso"
+                id="previewAviso"
+              ></p>
+
+
+              <div
+                class="preview-stage"
+                id="previewStage"
+              >
+
+                <iframe
+                  id="previewFrame"
+                  title="Vista previa del correo"
+                  sandbox="allow-same-origin"
+                ></iframe>
+
+              </div>
+
+            </aside>
+
 
           </div>
 
@@ -518,6 +713,55 @@
       </form>
 
     </main>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
+     VISTA PREVIA AMPLIADA
+     ======================================================= -->
+
+<div
+  class="modal"
+  id="previewModal"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Vista previa del correo"
+>
+
+  <div class="modal-box">
+
+    <div class="modal-head">
+
+      <div>
+
+        <strong id="modalAsunto">
+          —
+        </strong>
+
+        <span class="modal-de">
+          De: Spazio Bodywork &lt;info@spaziobodywork.com&gt;
+        </span>
+
+      </div>
+
+      <button
+        type="button"
+        class="btn-ghost"
+        id="previewCloseBtn"
+      >
+        Cerrar
+      </button>
+
+    </div>
+
+    <iframe
+      id="modalFrame"
+      title="Vista previa ampliada del correo"
+      sandbox="allow-same-origin"
+    ></iframe>
 
   </div>
 

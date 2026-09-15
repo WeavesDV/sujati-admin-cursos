@@ -18,6 +18,14 @@ let registroActual = null;
 
 let ultimoElementoCopyActivo = null;
 
+/** Ancho real al que se renderiza el correo: 600 o 380 px. */
+let anchoPreview = 600;
+
+/** Último correo generado, para reutilizarlo en la vista ampliada. */
+let correoActual = null;
+
+let temporizadorPreview = null;
+
 
 /**
  * ============================================================
@@ -66,6 +74,28 @@ const connectionDot =
 
 const connectionText =
   document.getElementById('connectionText');
+
+
+const previewFrame =
+  document.getElementById('previewFrame');
+
+const previewStage =
+  document.getElementById('previewStage');
+
+const previewAsunto =
+  document.getElementById('previewAsunto');
+
+const previewAviso =
+  document.getElementById('previewAviso');
+
+const previewModal =
+  document.getElementById('previewModal');
+
+const modalFrame =
+  document.getElementById('modalFrame');
+
+const modalAsunto =
+  document.getElementById('modalAsunto');
 
 
 const campos = {
@@ -669,6 +699,9 @@ function cargarFormulario(
     true
   );
 
+
+  pintarPreview();
+
 }
 
 
@@ -992,6 +1025,60 @@ async function guardarCambios(
  * ============================================================
  */
 
+/**
+ * Los bloques de formato solo funcionan si ocupan su propia
+ * línea, así que se insertan separados del texto que haya
+ * alrededor.
+ */
+function insertarBloque(
+  bloque
+) {
+
+  const target =
+    campos.copy_template;
+
+  const start =
+    target.selectionStart ??
+    target.value.length;
+
+  const antes =
+    target.value.slice(0, start);
+
+  const despues =
+    target.value.slice(
+      target.selectionEnd ?? start
+    );
+
+
+  const prefijo =
+    !antes || /\n\n$/.test(antes)
+      ? ''
+      : (/\n$/.test(antes) ? '\n' : '\n\n');
+
+  const sufijo =
+    !despues || /^\n\n/.test(despues)
+      ? ''
+      : (/^\n/.test(despues) ? '\n' : '\n\n');
+
+
+  target.value =
+    antes + prefijo + bloque + sufijo + despues;
+
+
+  const posicion =
+    (antes + prefijo + bloque).length;
+
+
+  target.focus();
+
+  target.setSelectionRange(
+    posicion,
+    posicion
+  );
+
+}
+
+
 function insertarVariable(
   variable
 ) {
@@ -1040,6 +1127,248 @@ function insertarVariable(
     nuevaPosicion,
     nuevaPosicion
   );
+
+}
+
+
+/**
+ * ============================================================
+ * VISTA PREVIA DEL CORREO
+ * ============================================================
+ */
+
+/**
+ * Mezcla el registro cargado con lo que hay ahora mismo en el
+ * formulario: así la vista previa refleja también los cambios
+ * todavía sin guardar (precio, fechas, docente...).
+ */
+function registroParaPreview() {
+
+  const base =
+    registroActual
+      ? { ...registroActual }
+      : {};
+
+  Object.keys(campos).forEach(
+    key => {
+
+      base[key] =
+        campos[key].value;
+
+    }
+  );
+
+  return base;
+
+}
+
+
+/**
+ * Ajusta el iframe a la altura de su contenido y lo reduce
+ * con transform hasta que quepa en la columna. El correo se
+ * sigue maquetando a 600 (o 380) px reales.
+ */
+function escalarPreview() {
+
+  let alto = 900;
+
+  try {
+
+    const documento =
+      previewFrame.contentDocument;
+
+    if (documento && documento.body) {
+
+      alto =
+        Math.max(
+          documento.body.scrollHeight,
+          documento.documentElement.scrollHeight
+        );
+
+    }
+
+  } catch (error) {
+
+    /**
+     * Abierto desde file://, el navegador puede tratar el iframe
+     * como origen opaco y no dejar medirlo. Se usa un alto fijo
+     * y la vista previa sigue siendo utilizable.
+     */
+
+  }
+
+
+  const disponible =
+    previewStage.clientWidth;
+
+  const escala =
+    disponible
+      ? Math.min(1, disponible / anchoPreview)
+      : 1;
+
+
+  previewFrame.style.width =
+    `${anchoPreview}px`;
+
+  previewFrame.style.height =
+    `${alto}px`;
+
+  previewFrame.style.transform =
+    `scale(${escala})`;
+
+  previewStage.style.height =
+    `${Math.round(alto * escala)}px`;
+
+}
+
+
+/**
+ * Avisa de las variables que no tienen valor y de las que se
+ * han rellenado con un ejemplo (las que dependen de cada
+ * destinatario, como {{nombre}}).
+ */
+/**
+ * El evento load del iframe espera a las imágenes remotas del
+ * correo, que pueden tardar o no llegar. Se reajusta también a
+ * mano nada más pintar y otra vez cuando ya han entrado.
+ */
+function programarEscalado() {
+
+  [60, 400, 1200].forEach(
+    espera => {
+
+      setTimeout(
+        escalarPreview,
+        espera
+      );
+
+    }
+  );
+
+}
+
+
+function avisoPreview(correo) {
+
+  const partes = [];
+
+  if (correo.faltantes.length) {
+
+    partes.push(
+      `Sin valor: ${correo.faltantes.map(v => `{{${v}}}`).join(', ')}`
+    );
+
+  }
+
+  if (correo.muestras.length) {
+
+    partes.push(
+      `Con datos de ejemplo: ${correo.muestras.map(v => `{{${v}}}`).join(', ')}`
+    );
+
+  }
+
+  if (correo.propio) {
+
+    partes.push(
+      'El copy trae su propio HTML: se muestra sin aplicar la plantilla.'
+    );
+
+  }
+
+
+  previewAviso.textContent =
+    partes.join(' · ');
+
+  previewAviso.classList.toggle(
+    'show',
+    partes.length > 0
+  );
+
+}
+
+
+function pintarPreview() {
+
+  if (!registroActual) {
+    return;
+  }
+
+
+  const correo =
+    EmailTemplate.render({
+
+      asunto:
+        campos.asunto_template.value,
+
+      copy:
+        campos.copy_template.value,
+
+      registro:
+        registroParaPreview()
+
+    });
+
+
+  correoActual = correo;
+
+
+  const asunto =
+    correo.asunto.trim() ||
+    '(sin asunto)';
+
+  previewAsunto.textContent = asunto;
+
+  modalAsunto.textContent = asunto;
+
+
+  avisoPreview(correo);
+
+
+  previewFrame.srcdoc =
+    EmailTemplate.documento(correo.html);
+
+  programarEscalado();
+
+
+  if (previewModal.classList.contains('show')) {
+
+    modalFrame.srcdoc =
+      previewFrame.srcdoc;
+
+  }
+
+}
+
+
+/** El repintado es barato, pero se escribe letra a letra. */
+function actualizarPreview() {
+
+  clearTimeout(temporizadorPreview);
+
+  temporizadorPreview =
+    setTimeout(pintarPreview, 200);
+
+}
+
+
+function abrirPreviewAmpliada() {
+
+  if (!correoActual) {
+    return;
+  }
+
+  modalFrame.srcdoc =
+    EmailTemplate.documento(correoActual.html);
+
+  previewModal.classList.add('show');
+
+}
+
+
+function cerrarPreviewAmpliada() {
+
+  previewModal.classList.remove('show');
 
 }
 
@@ -1136,9 +1465,141 @@ campos.asunto_template.addEventListener(
 );
 
 
+/**
+ * Cualquier cambio en el formulario repinta la vista previa:
+ * las variables del copy se alimentan también de los campos
+ * de información general.
+ */
+editor.addEventListener(
+  'input',
+  actualizarPreview
+);
+
+
+editor.addEventListener(
+  'change',
+  actualizarPreview
+);
+
+
+previewFrame.addEventListener(
+  'load',
+  escalarPreview
+);
+
+
+window.addEventListener(
+  'resize',
+  escalarPreview
+);
+
+
 document
   .querySelectorAll(
-    '.variable'
+    '.device-btn'
+  )
+  .forEach(
+    button => {
+
+      button.addEventListener(
+        'click',
+        () => {
+
+          anchoPreview =
+            Number(button.dataset.ancho);
+
+          document
+            .querySelectorAll('.device-btn')
+            .forEach(
+              otro => {
+
+                otro.classList.toggle(
+                  'is-active',
+                  otro === button
+                );
+
+              }
+            );
+
+          escalarPreview();
+
+        }
+      );
+
+    }
+  );
+
+
+document
+  .getElementById('previewExpandBtn')
+  .addEventListener(
+    'click',
+    abrirPreviewAmpliada
+  );
+
+
+document
+  .getElementById('previewCloseBtn')
+  .addEventListener(
+    'click',
+    cerrarPreviewAmpliada
+  );
+
+
+previewModal.addEventListener(
+  'click',
+  event => {
+
+    if (event.target === previewModal) {
+      cerrarPreviewAmpliada();
+    }
+
+  }
+);
+
+
+document.addEventListener(
+  'keydown',
+  event => {
+
+    if (event.key === 'Escape') {
+      cerrarPreviewAmpliada();
+    }
+
+  }
+);
+
+
+document
+  .querySelectorAll(
+    '#bloques .variable'
+  )
+  .forEach(
+    button => {
+
+      button.addEventListener(
+        'click',
+        () => {
+
+          insertarBloque(
+            button.dataset.bloque
+          );
+
+          ultimoElementoCopyActivo =
+            campos.copy_template;
+
+          actualizarPreview();
+
+        }
+      );
+
+    }
+  );
+
+
+document
+  .querySelectorAll(
+    '#variables .variable'
   )
   .forEach(
     button => {
